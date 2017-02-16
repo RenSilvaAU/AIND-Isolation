@@ -161,7 +161,9 @@ class CustomPlayer:
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            pass
+            print(' ===> I have timed out with move ' + str(move))
+            if move:
+                return move
             
         # Return the best move from the last completed search iteration
         return move
@@ -206,37 +208,74 @@ class CustomPlayer:
         # TODO: finish this function!
         # raise NotImplementedError
 
+        try:
+            available_moves = game.get_legal_moves()
 
-        available_moves = game.get_legal_moves()
+            # print('  =>> Level ' + str(depth) + ' Number of moves to check: ' + str(len(available_moves)) )
+            # print('Iterative ' + str(self.iterative))
 
-        # print('  =>> Level ' + str(depth) + ' Number of moves to check: ' + str(len(available_moves)) )
-        # print('Iterative ' + str(self.iterative))
+            # if no more moves left
+            if not available_moves or self.search_depth < depth :
+                if maximizing_player:
+                    # I win
+                   return (float("inf"), (-1,-1) )
+                else:
+                    # I lose
+                   return (float("-inf"), (-1,-1) )
 
-        # if no more moves left
-        if not available_moves:
+
+            """
+            if self.search_depth < depth:
+                print('search depth ' + str(self.search_depth))
+    #            move = self.minimax(game, depth-1, not( maximizing_player) )
+                return (self.score(game.forecast_move(available_moves[0]),self), available_moves[0])
+            """
+
+
+              
             if maximizing_player:
-                # I win
-               return (float("inf"), (-1,-1) )
+
+                move = (float("-inf"), available_moves[0])  #  initializing it...
+
+                # move = max([(self.score(game.forecast_move(m), self), m) for m in available_moves])
+                for m in available_moves:
+                    if  game.move_count  <= depth:
+                        # print('Move Count ' + str(game.move_count))
+                        # print('search depth ' + str(self.search_depth))
+                        move = min(move, (self.minimax(game.forecast_move(m), depth, not(maximizing_player))))
+                    else: 
+                        move = max(move, (self.score(game.forecast_move(m), game.active_player), m)) 
+
             else:
-                # I lose
-               return (float("-inf"), (-1,-1) )
 
+                move = (float("+inf"), available_moves[0])  #  initializing it...
 
+                for m in available_moves:
+                    if  game.move_count <= depth:
+                        # print('Move Count ' + str(game.move_count))
+                        # print('search depth ' + str(self.search_depth))
+                        move = min(move, (self.minimax(game.forecast_move(m), depth, not(maximizing_player))))
+                    else: 
+                        move = min(move, (self.score(game.forecast_move(m), game.active_player), m)) 
 
-        if self.search_depth < depth:
-            print('search depth ' + str(self.search_depth))
-            move = self.minimax(game, depth-1, not( maximizing_player) )
-        #    return (self.score(game.forecast_move(available_moves[0]),self), available_moves[0])
-        else: 
-            move = (float("-inf"), available_moves[0])  #  initializing it...
+ 
+                # move = min([(self.score(game.forecast_move(m), self), m) for m in available_moves])
 
-        if maximizing_player:
-            move = max([(self.score(game.forecast_move(m), self), m) for m in available_moves])
-        else:
-            move = min([(self.score(game.forecast_move(m), self), m) for m in available_moves])
+            if depth == 2:
+                minimax_txt = ' minimum '
+                if maximizing_player:
+                    minimax_txt = ' maximum '
+                    print(' ====> returning ' + minimax_txt + ' of  ' + str(move) + 'in level: ' + str(game.move_count) )
 
+            return move
 
-        return move
+        except Timeout:
+
+            print(' ===> I have timed out with move ' + str(move))
+            # Handle any actions required at timeout, if necessary
+            if move:
+                return move
+
 
 
 
