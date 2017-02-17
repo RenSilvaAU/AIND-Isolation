@@ -53,6 +53,8 @@ def custom_score(game, player):
 
     # there is a better way.. but I don't know it!!!
 
+    # print('===> calculating custom score for ' +  str(player))
+
     return (len(game.get_legal_moves(player)))
  
 
@@ -239,24 +241,28 @@ class CustomPlayer:
 
                 # move = max([(self.score(game.forecast_move(m), self), m) for m in available_moves])
                 for m in available_moves:
-                    if  game.move_count  <= depth:
-                        # print('Move Count ' + str(game.move_count))
-                        # print('search depth ' + str(self.search_depth))
-                        move = min(move, (self.minimax(game.forecast_move(m), depth, not(maximizing_player))))
+                    if  game.move_count  <= depth and depth > 1:
+                        # print(' Moving down one level: ' + str(game.move_count) + ' to depth ' + str(depth))
+
+                        move = max(move, (self.minimax(game.forecast_move(m), depth, not(maximizing_player))))
                     else: 
-                        move = max(move, (self.score(game.forecast_move(m), game.active_player), m)) 
+                        print ('My Move (before): ' + str(move)) 
+                        move = max(move, (self.score(game.forecast_move(m), self), m)) 
+                        print ('My Move (after): ' + str(move)) 
 
             else:
 
                 move = (float("+inf"), available_moves[0])  #  initializing it...
-
+                # print( 'I am now minimizing')
                 for m in available_moves:
-                    if  game.move_count <= depth:
+                    if  game.move_count <= depth and depth > 1:
                         # print('Move Count ' + str(game.move_count))
                         # print('search depth ' + str(self.search_depth))
                         move = min(move, (self.minimax(game.forecast_move(m), depth, not(maximizing_player))))
-                    else: 
-                        move = min(move, (self.score(game.forecast_move(m), game.active_player), m)) 
+                    else:
+                        print ('My Move: ' + str(move)) 
+                        move = min(move, (self.score(game.forecast_move(m), self), m)) 
+
 
  
                 # move = min([(self.score(game.forecast_move(m), self), m) for m in available_moves])
@@ -265,13 +271,14 @@ class CustomPlayer:
                 minimax_txt = ' minimum '
                 if maximizing_player:
                     minimax_txt = ' maximum '
-                    print(' ====> returning ' + minimax_txt + ' of  ' + str(move) + 'in level: ' + str(game.move_count) )
+                
+                print(' ====> returning ' + minimax_txt + ' of  ' + str(move) + 'in level: ' + str(game.move_count) )
 
             return move
 
         except Timeout:
 
-            print(' ===> I have timed out with move ' + str(move))
+            # print(' ===> I have timed out with move ' + str(move))
             # Handle any actions required at timeout, if necessary
             if move:
                 return move
