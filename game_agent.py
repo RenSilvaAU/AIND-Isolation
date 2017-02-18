@@ -230,6 +230,7 @@ class CustomPlayer:
 
         
         try:
+
             available_moves = game.get_legal_moves()
 
             # if no more moves left
@@ -241,52 +242,23 @@ class CustomPlayer:
                     # I lose
                    return (float("-inf"), (-1,-1) )
 
-              
-            if maximizing_player:
 
-                best_score = 0
+            if  game.move_count  <= depth and depth > 1:
 
+                move = (float("-inf"), available_moves[0])  #  initializing it...
+                for m in available_moves:
+                    score,_ = self.minimax(game.forecast_move(m), depth, not(maximizing_player))
 
-                if  game.move_count  <= depth and depth > 1:
+                    if score > move[0]:
+                        move = (score, m)                       
 
-                    move = (float("+inf"), available_moves[0])  #  initializing it...
-                    for m in available_moves:
-                        score,_ = self.minimax(game.forecast_move(m), depth, not(maximizing_player))
-                        score = -1 * score
-                        if score < move[0]:
-                            print('Best minimizing move ' + str(move))
-                            move = (score, m)                         
+            else: 
 
-                else: 
-
-                    move = (float("-inf"), available_moves[0])  #  initializing it...
-                    for m in available_moves:
-                        score = self.score(game.forecast_move(m),self)
-                        if score > move[0]:
-                            move = (score, m) 
-
-            else:
-
-
-                if  game.move_count  <= depth and depth > 1:
-
-                    move = (float("-inf"), available_moves[0])  #  initializing it...
-                    for m in available_moves:
-                        score,_ = self.minimax(game.forecast_move(m), depth, not(maximizing_player))
-                        if score > move[0]:
-                            print('Best minimizing move ' + str(move))
-                            move = (score, m)                         
-
-                else: 
-
-                    move = (float("+inf"), available_moves[0])  #  initializing it...
-                    for m in available_moves:
-                        score = self.score(game.forecast_move(m),self)
-                        if score < move[0]:
-                            move = (score, m) 
-
-            if depth == 4:        
-                print ( '... Will return ' + str(move) + 'for depth ' + str(game.move_count) + '/' + str(depth))
+                move = (float("-inf"), available_moves[0])  #  initializing it...
+                for m in available_moves:
+                    score = self.score(game.forecast_move(m),self)
+                    if score > move[0]:
+                        move = (score, m) 
 
             return move
 
