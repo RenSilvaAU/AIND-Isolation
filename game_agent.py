@@ -53,10 +53,7 @@ def custom_score(game, player):
 
     # there is a better way.. but I don't know it!!!
 
-    # print('===> calculating custom score for ' +  str(player))
-
     return float(len(game.get_legal_moves(player)))
-
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -148,7 +145,7 @@ class CustomPlayer:
         if not legal_moves:
             return (-1, -1)
 
-        # let us star with iterative deepening - first move    
+        # let us start with iterative deepening - first move    
         move = legal_moves[0]    
 
         try:
@@ -160,30 +157,31 @@ class CustomPlayer:
             if not self.iterative:
 
                 # if not iterative deepening defined, go for level 1
-                (score, move) = self.minimax(game, 1)
+                (score, selected_move) = self.alphabeta(game, 1)
             
             else:
 
                 # if iterative deepening defined, keep lowereing till quiesce or run out of time
 
                 targetlevel = 1
-    
-                (score, move) = self.minimax(game, targetlevel)
-                
-                newmove = (float("-inf"),(-1,-1))
+ 
+                selected_move = (-1,-1)
 
-                while newmove != move: # if moves are the same, achieved quiescence
-                    move = newmove # save move
-                    (score, newmove ) = self.minimax(game, targetlevel)
+                (score, newmove) = self.alphabeta(game, depth=targetlevel)
+
+                while newmove != selected_move: # if moves are the same, achieved quiescence
+                    selected_move = newmove # save move
+                    (score, newmove ) = self.alphabeta(game, depth=targetlevel)
 
                 # if newmove == move:
                     # print ('quiesced at: ' + str(score) + ' move ' + str(move))
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            print(' ===> I have timed out with move ' + str(move))
-            if move:
-                return move
+
+            print(' ===> I have timed out with move ' + str(selected_move) + " in level " + str(targetlevel))
+            if selected_move:
+                return selected_move
             
         # Return the best move from the last completed search iteration
         return move
@@ -235,6 +233,7 @@ class CustomPlayer:
 
             # if no more moves left
             if not available_moves or self.search_depth < depth :
+
                 if maximizing_player:
                     # I win
                    return (float("inf"), (-1,-1) )
@@ -247,6 +246,7 @@ class CustomPlayer:
 
                 move = (float("-inf"), available_moves[0])  #  initializing it...
                 for m in available_moves:
+
                     score,_ = self.minimax(game.forecast_move(m), depth, not(maximizing_player))
 
                     if score > move[0]:
@@ -267,10 +267,6 @@ class CustomPlayer:
             # Handle any actions required at timeout, if necessary
             if move:
                 return move
-
-    def trim(self, game):
-
-        newgame = game.copy
 
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
@@ -316,6 +312,173 @@ class CustomPlayer:
             raise Timeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        # raise NotImplementedError
+
+
+        try:
+
+
+            available_moves = game.get_legal_moves()
+
+            # if no more moves left
+            if not available_moves:
+                return ( game.utility, (-1,-1) )
+
+            if depth == 0:
+                return (self.score(game,self), available_moves[0])
+
+            if  maximizing_player:
+
+                move = (float("-inf"), available_moves[0])  #  initializing it...
+
+                for m in available_moves:
+
+                    score,_ = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not(maximizing_player))
+
+                    if score > move[0]:
+                        move = (score, m)                       
+                    
+                    alpha = max(alpha,score)
+
+                    if beta <= alpha: 
+                       break
+
+
+            else: 
+
+                move = (float("inf"), available_moves[0])  #  initializing it...
+
+                for m in available_moves:
+                    score,_ = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not(maximizing_player))
+
+                    if score < move[0]:
+                        move = (score, m)                       
+                    
+                    beta = min(beta,score)
+
+                    if beta <= alpha: 
+                       break
+
+            return move
+
+        except Timeout:
+
+            # Handle any actions required at timeout, if necessary
+            if move:
+                return move
+
+
+    def old_alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
+        """
+        Implement minimax search with alpha-beta pruning as described in the
+        lectures.
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        alpha : float
+            Alpha limits the lower bound of search on minimizing layers
+
+        beta : float
+            Beta limits the upper bound of search on maximizing layers
+
+        maximizing_player : bool
+            Flag indicating whether the current search depth corresponds to a
+            maximizing layer (True) or a minimizing layer (False)
+
+        Returns
+        -------
+        float
+            The score for the current search branch
+
+        tuple(int, int)
+            The best move for the current branch; (-1, -1) for no legal moves
+
+        Notes
+        -----
+            (1) You MUST use the `self.score()` method for board evaluation
+                to pass the project unit tests; you cannot call any other
+                evaluation function directly.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise Timeout()
+
+        # TODO: finish this function!
+        # raise NotImplementedError
+
+
+        try:
+
+            available_moves = game.get_legal_moves()
+
+            # if no more moves left
+            if not available_moves or self.search_depth < depth :
+                if maximizing_player:
+                    # I win
+                   return (float("inf"), (-1,-1) )
+                else:
+                    # I lose
+                   return (float("-inf"), (-1,-1) )
+
+
+            if  game.move_count  <= depth and depth > 1:
+
+                move = (alpha, available_moves[0])  #  initializing it...
+                for m in available_moves:
+                    score,_ = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not(maximizing_player))
+
+                    if score > alpha:
+                        alpha = score
+
+
+                    if score > move[0]:
+                        move = (score, m)                       
+                    else:
+                        if score < alpha:
+                             print( '... will prune ' + str(alpha) + ' : ' + str(score) + ' ' + str(m))
+                             break
+
+
+
+
+
+
+            else: 
+
+                move = (alpha, available_moves[0])  #  initializing it...
+
+                # if game.move_count == 4:
+                    #print('check game')
+                    #print(game.to_string())
+                    #print('available moves' + str(available_moves))
+
+                for m in available_moves:
+                    score = self.score(game.forecast_move(m),self)
+
+                    if score > alpha:
+                        alpha = score
+
+                    if score > move[0]:
+                        move = (score, m) 
+                        # print( 'My best move is ' + str(move))
+                    else:
+                        if score < alpha and depth > 1:
+                            print( '... will prune ' + str(alpha) + ' : ' + str(score) + ' ' + str(m))
+                            break
+
+            return move
+
+        except Timeout:
+
+            # Handle any actions required at timeout, if necessary
+            if move:
+                return move
 
       
