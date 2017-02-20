@@ -157,7 +157,7 @@ class CustomPlayer:
             if not self.iterative:
 
                 # if not iterative deepening defined, go for level 1
-                (score, selected_move) = self.alphabeta(game, 1)
+                (score, selected_move) = self.minimax(game, depth=1)
             
             else:
 
@@ -167,19 +167,19 @@ class CustomPlayer:
  
                 selected_move = (-1,-1)
 
-                (score, newmove) = self.alphabeta(game, depth=targetlevel)
+                (score, newmove) = self.minimax(game, depth=targetlevel)
 
-                while newmove != selected_move: # if moves are the same, achieved quiescence
+                while score != float("inf") and score != float("-inf"): # if I win, I stop
+                    targetlevel = targetlevel + 1
                     selected_move = newmove # save move
-                    (score, newmove ) = self.alphabeta(game, depth=targetlevel)
-
-                # if newmove == move:
-                    # print ('quiesced at: ' + str(score) + ' move ' + str(move))
+                    # print('')
+                    # print('I have picked ' + str(newmove) + 'at level ' + str(targetlevel))
+                    (score, newmove ) = self.minimax(game, depth=targetlevel)
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
 
-            print(' ===> I have timed out with move ' + str(selected_move) + " in level " + str(targetlevel))
+            # print(' ===> I have timed out with move ' + str(selected_move) + " in level " + str(targetlevel))
             if selected_move:
                 return selected_move
             
@@ -188,7 +188,7 @@ class CustomPlayer:
 
         # raise NotImplementedError
 
-    def minimax(self, game, depth, maximizing_player=True):
+    def old_minimax(self, game, depth, maximizing_player=True):
 
         """Implement the minimax search algorithm as described in the lectures.
 
@@ -268,6 +268,90 @@ class CustomPlayer:
             if move:
                 return move
 
+    def minimax(self, game, depth, maximizing_player=True):
+
+        """Implement the minimax search algorithm as described in the lectures.
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        maximizing_player : bool
+            Flag indicating whether the current search depth corresponds to a
+            maximizing layer (True) or a minimizing layer (False)
+
+        Returns
+        -------
+        float
+            The score for the current search branch
+
+        tuple(int, int)
+            The best move for the current branch; (-1, -1) for no legal moves
+
+        Notes
+        -----
+            (1) You MUST use the `self.score()` method for board evaluation
+                to pass the project unit tests; you cannot call any other
+                evaluation function directly.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise Timeout()
+
+        # TODO: finish this function!
+        # raise NotImplementedError
+
+
+        try:
+
+
+            available_moves = game.get_legal_moves()
+
+            # if no more moves left
+            if not available_moves:
+                if maximizing_player:
+                    return ( float("inf") , (-1,-1) )
+                else:
+                    return ( float("-inf") , (-1,-1) )                    
+
+            if depth <= 0:
+                return (self.score(game,self), available_moves[0])
+
+            if  maximizing_player:
+
+                move = (float("-inf"), available_moves[0])  #  initializing it...
+
+                for m in available_moves:
+
+                    score,_ = self.minimax(game.forecast_move(m), depth - 1, not(maximizing_player))
+
+                    if score > move[0]:
+                        move = (score, m)                       
+
+
+            else: 
+
+                move = (float("inf"), available_moves[0])  #  initializing it...
+
+                for m in available_moves:
+                    score,_ = self.minimax(game.forecast_move(m), depth - 1, not(maximizing_player))
+
+                    if score < move[0]:
+                        move = (score, m)                       
+                
+
+            return move
+
+        except Timeout:
+
+            # Handle any actions required at timeout, if necessary
+            if move:
+                return move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """
@@ -322,9 +406,14 @@ class CustomPlayer:
 
             # if no more moves left
             if not available_moves:
-                return ( game.utility, (-1,-1) )
+                if maximizing_player:
+                    # if I run out of options, I have lost
+                    return ( float("-inf") , (-1,-1) )
+                else:
+                    # if I the oponent runs out of options, they have lost
+                    return ( float("inf") , (-1,-1) ) 
 
-            if depth == 0:
+            if depth <= 0:
                 return (self.score(game,self), available_moves[0])
 
             if  maximizing_player:
@@ -421,11 +510,11 @@ class CustomPlayer:
             # if no more moves left
             if not available_moves or self.search_depth < depth :
                 if maximizing_player:
-                    # I win
-                   return (float("inf"), (-1,-1) )
+                    # if I run out of options, I have lost
+                    return ( float("-inf") , (-1,-1) )
                 else:
-                    # I lose
-                   return (float("-inf"), (-1,-1) )
+                    # if I the oponent runs out of options, they have lost
+                    return ( float("inf") , (-1,-1) ) 
 
 
             if  game.move_count  <= depth and depth > 1:
