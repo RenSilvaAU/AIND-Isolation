@@ -40,16 +40,27 @@ def custom_score(game, player):
     # TODO: finish this function!
     #raise NotImplementedError
 
-    # how many legal moves do I have right now?
+    """
+    I tried three possibilities:
+
+     - Number of My moves
+     - Number of My moves Minus Number of Opponent's moves
+     - Number of My moves Minus 2 x Number of Opponnents moves
 
     # OPTION 1:  Number of My Moves
     # return float(len(game.get_legal_moves(player)))
 
     # OPTION 2:  Number of My Moves - Number of Opponents Moves
+    #            (This was my final choice)
     # return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
     # OPTION 3:  Number of My Moves - 2 x Number of Opponents Moves
-    return float(len(game.get_legal_moves(player)) - 2 * len(game.get_legal_moves(game.get_opponent(player))))
+    # return float(len(game.get_legal_moves(player)) - 2 * len(game.get_legal_moves(game.get_opponent(player))))
+
+    """
+
+    # Number of My Moves - Number of Opponents Moves
+    return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
 
 class CustomPlayer:
