@@ -69,7 +69,7 @@ def custom_score(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    # Number of My Moves - Number of Opponents Moves
+    # Number of My Moves - Number of Opponent's Moves
     return float( len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
 
