@@ -37,22 +37,10 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
-    """
-
-    print ('')
-    print('Started custom score....')
-    print ('')
-    print(game)
-    print(player)
-    print ('')
-    print('Ended custom score....')
-    """
-
     # TODO: finish this function!
     #raise NotImplementedError
 
-    # there is a better way.. but I don't know it!!!
-
+    # how many legal moves do I have right now?
     return float(len(game.get_legal_moves(player)))
 
 class CustomPlayer:
@@ -141,12 +129,12 @@ class CustomPlayer:
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
 
-        # if there are no legal moves, return
+        # if there are no legal moves, I have lost
         if not legal_moves:
             return (-1, -1)
 
-        # let us start with iterative deepening - first move    
-        move = legal_moves[0]    
+        # get any move - in case I run out of time   
+        saved_move = legal_moves[0]    
 
         try:
             # The search method call (alpha beta or minimax) should happen in
@@ -156,117 +144,42 @@ class CustomPlayer:
 
             if not self.iterative:
 
-                # if not iterative deepening defined, go for level 1
-                (score, selected_move) = self.minimax(game, depth=1)
+                # if not iterative deepening defined, go to level 1
+
+                if self.method == 'minimax':
+                    (score, new_move) = self.minimax(game, depth=1)
+                else:
+                    (score, new_move) = self.alphabeta(game, depth=1)
+
             
             else:
 
                 # if iterative deepening defined, keep lowereing till quiesce or run out of time
 
                 targetlevel = 1
- 
-                selected_move = (-1,-1)
 
-                (score, newmove) = self.minimax(game, depth=targetlevel)
+                (score, new_move) = self.minimax(game, depth=targetlevel)
 
-                while score != float("inf") and score != float("-inf"): # if I win, I stop
+                while score != float("inf") and score != float("-inf"): # if I win or lose, stop
+
                     targetlevel = targetlevel + 1
-                    selected_move = newmove # save move
-                    # print('')
-                    # print('I have picked ' + str(newmove) + 'at level ' + str(targetlevel))
-                    (score, newmove ) = self.minimax(game, depth=targetlevel)
+
+                    saved_move = new_move # save move, in case I run out of time
+
+                    if self.method == 'minimax':
+                        (score, new_move ) = self.minimax(game, depth=targetlevel)
+                    else:
+                        (score, new_move ) = self.alphabeta(game, depth=targetlevel)
+
+            # Return the best move from the last completed search iteration
+            return new_move
 
         except Timeout:
-            # Handle any actions required at timeout, if necessary
-
-            # print(' ===> I have timed out with move ' + str(selected_move) + " in level " + str(targetlevel))
-            if selected_move:
-                return selected_move
             
-        # Return the best move from the last completed search iteration
-        return move
+            # I have ran out of time.. return existing saved_move
+            if saved_move:
+                return saved_move
 
-        # raise NotImplementedError
-
-    def old_minimax(self, game, depth, maximizing_player=True):
-
-        """Implement the minimax search algorithm as described in the lectures.
-
-        Parameters
-        ----------
-        game : isolation.Board
-            An instance of the Isolation game `Board` class representing the
-            current game state
-
-        depth : int
-            Depth is an integer representing the maximum number of plies to
-            search in the game tree before aborting
-
-        maximizing_player : bool
-            Flag indicating whether the current search depth corresponds to a
-            maximizing layer (True) or a minimizing layer (False)
-
-        Returns
-        -------
-        float
-            The score for the current search branch
-
-        tuple(int, int)
-            The best move for the current branch; (-1, -1) for no legal moves
-
-        Notes
-        -----
-            (1) You MUST use the `self.score()` method for board evaluation
-                to pass the project unit tests; you cannot call any other
-                evaluation function directly.
-        """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
-
-        # TODO: finish this function!
-        # raise NotImplementedError
-
-        
-        try:
-
-            available_moves = game.get_legal_moves()
-
-            # if no more moves left
-            if not available_moves or self.search_depth < depth :
-
-                if maximizing_player:
-                    # I win
-                   return (float("inf"), (-1,-1) )
-                else:
-                    # I lose
-                   return (float("-inf"), (-1,-1) )
-
-
-            if  game.move_count  <= depth and depth > 1:
-
-                move = (float("-inf"), available_moves[0])  #  initializing it...
-                for m in available_moves:
-
-                    score,_ = self.minimax(game.forecast_move(m), depth, not(maximizing_player))
-
-                    if score > move[0]:
-                        move = (score, m)                       
-
-            else: 
-
-                move = (float("-inf"), available_moves[0])  #  initializing it...
-                for m in available_moves:
-                    score = self.score(game.forecast_move(m),self)
-                    if score > move[0]:
-                        move = (score, m) 
-
-            return move
-
-        except Timeout:
-
-            # Handle any actions required at timeout, if necessary
-            if move:
-                return move
 
     def minimax(self, game, depth, maximizing_player=True):
 
@@ -315,11 +228,13 @@ class CustomPlayer:
             # if no more moves left
             if not available_moves:
                 if maximizing_player:
-                    return ( float("inf") , (-1,-1) )
+                    # if I run out of options, I have lost
+                    return ( float("-inf") , (-1,-1) )
                 else:
-                    return ( float("-inf") , (-1,-1) )                    
+                    # if the minimizing player (the oponent) runs out of options, they have lost
+                    return ( float("inf") , (-1,-1) )                 
 
-            if depth <= 0:
+            if depth <= 0: # this is as far as I go, return score
                 return (self.score(game,self), available_moves[0])
 
             if  maximizing_player:
@@ -334,7 +249,7 @@ class CustomPlayer:
                         move = (score, m)                       
 
 
-            else: 
+            else: # mimizing player
 
                 move = (float("inf"), available_moves[0])  #  initializing it...
 
@@ -349,7 +264,7 @@ class CustomPlayer:
 
         except Timeout:
 
-            # Handle any actions required at timeout, if necessary
+            # I have run out of time, return known move
             if move:
                 return move
 
@@ -413,7 +328,7 @@ class CustomPlayer:
                     # if I the oponent runs out of options, they have lost
                     return ( float("inf") , (-1,-1) ) 
 
-            if depth <= 0:
+            if depth <= 0: # this is as far as I go, return score
                 return (self.score(game,self), available_moves[0])
 
             if  maximizing_player:
@@ -433,7 +348,7 @@ class CustomPlayer:
                        break
 
 
-            else: 
+            else: # minimizing player
 
                 move = (float("inf"), available_moves[0])  #  initializing it...
 
@@ -452,122 +367,12 @@ class CustomPlayer:
 
         except Timeout:
 
-            # Handle any actions required at timeout, if necessary
+            # Ran out of time, return known move
             if move:
                 return move
 
 
-    def old_alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
-        """
-        Implement minimax search with alpha-beta pruning as described in the
-        lectures.
-
-        Parameters
-        ----------
-        game : isolation.Board
-            An instance of the Isolation game `Board` class representing the
-            current game state
-
-        depth : int
-            Depth is an integer representing the maximum number of plies to
-            search in the game tree before aborting
-
-        alpha : float
-            Alpha limits the lower bound of search on minimizing layers
-
-        beta : float
-            Beta limits the upper bound of search on maximizing layers
-
-        maximizing_player : bool
-            Flag indicating whether the current search depth corresponds to a
-            maximizing layer (True) or a minimizing layer (False)
-
-        Returns
-        -------
-        float
-            The score for the current search branch
-
-        tuple(int, int)
-            The best move for the current branch; (-1, -1) for no legal moves
-
-        Notes
-        -----
-            (1) You MUST use the `self.score()` method for board evaluation
-                to pass the project unit tests; you cannot call any other
-                evaluation function directly.
-        """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
-
-        # TODO: finish this function!
-        # raise NotImplementedError
 
 
-        try:
-
-            available_moves = game.get_legal_moves()
-
-            # if no more moves left
-            if not available_moves or self.search_depth < depth :
-                if maximizing_player:
-                    # if I run out of options, I have lost
-                    return ( float("-inf") , (-1,-1) )
-                else:
-                    # if I the oponent runs out of options, they have lost
-                    return ( float("inf") , (-1,-1) ) 
-
-
-            if  game.move_count  <= depth and depth > 1:
-
-                move = (alpha, available_moves[0])  #  initializing it...
-                for m in available_moves:
-                    score,_ = self.alphabeta(game.forecast_move(m), depth - 1, alpha, beta, not(maximizing_player))
-
-                    if score > alpha:
-                        alpha = score
-
-
-                    if score > move[0]:
-                        move = (score, m)                       
-                    else:
-                        if score < alpha:
-                             print( '... will prune ' + str(alpha) + ' : ' + str(score) + ' ' + str(m))
-                             break
-
-
-
-
-
-
-            else: 
-
-                move = (alpha, available_moves[0])  #  initializing it...
-
-                # if game.move_count == 4:
-                    #print('check game')
-                    #print(game.to_string())
-                    #print('available moves' + str(available_moves))
-
-                for m in available_moves:
-                    score = self.score(game.forecast_move(m),self)
-
-                    if score > alpha:
-                        alpha = score
-
-                    if score > move[0]:
-                        move = (score, m) 
-                        # print( 'My best move is ' + str(move))
-                    else:
-                        if score < alpha and depth > 1:
-                            print( '... will prune ' + str(alpha) + ' : ' + str(score) + ' ' + str(m))
-                            break
-
-            return move
-
-        except Timeout:
-
-            # Handle any actions required at timeout, if necessary
-            if move:
-                return move
 
       
