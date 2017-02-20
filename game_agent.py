@@ -41,7 +41,16 @@ def custom_score(game, player):
     #raise NotImplementedError
 
     # how many legal moves do I have right now?
-    return float(len(game.get_legal_moves(player)))
+
+    # OPTION 1:  Number of My Moves
+    # return float(len(game.get_legal_moves(player)))
+
+    # OPTION 2:  Number of My Moves - Number of Opponents Moves
+    # return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
+
+    # OPTION 3:  Number of My Moves - 2 x Number of Opponents Moves
+    return float(len(game.get_legal_moves(player)) - 2 * len(game.get_legal_moves(game.get_opponent(player))))
+
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
