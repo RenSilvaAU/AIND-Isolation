@@ -54,13 +54,16 @@ def custom_score(game, player):
     #            (This was my final choice)
     # return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
-    # OPTION 3:  Number of My Moves - 2 x Number of Opponents Moves
+    # OPTION 3:  Number of My Moves - 2 x Number of Opponent's Moves
     # return float(len(game.get_legal_moves(player)) - 2 * len(game.get_legal_moves(game.get_opponent(player))))
+
+    # OPTION 4:  2 x Number of My Moves - Number of Opponent's Moves
+    # return float(2 * len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
     """
 
     # Number of My Moves - Number of Opponents Moves
-    return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
+    return float( len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
 
 class CustomPlayer:
