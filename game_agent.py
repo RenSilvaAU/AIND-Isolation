@@ -52,6 +52,7 @@ def custom_score(game, player):
 
     # OPTION 2:  Number of My Moves - Number of Opponents Moves
     #            (This was my final choice)
+    #            This is the same as the "Improved Score" used by the players my agent plays against
     # return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
     # OPTION 3:  Number of My Moves - 2 x Number of Opponent's Moves
@@ -61,6 +62,12 @@ def custom_score(game, player):
     # return float(2 * len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
 
     """
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
 
     # Number of My Moves - Number of Opponents Moves
     return float( len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
