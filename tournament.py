@@ -137,6 +137,8 @@ def play_round(agents, num_matches):
 
 def main():
 
+
+
     HEURISTICS = [("Null", null_score),
                   ("Open", open_move_score),
                   ("Improved", improved_score)]
@@ -163,19 +165,21 @@ def main():
     test_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
                    Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student")]
 
-    print(DESCRIPTION)
-    for agentUT in test_agents:
-        print("")
-        print("*************************")
-        print("{:^25}".format("Evaluating: " + agentUT.name))
-        print("*************************")
 
-        agents = random_agents + mm_agents + ab_agents + [agentUT]
-        win_ratio = play_round(agents, NUM_MATCHES)
+    for i in range(50):
+        print(DESCRIPTION)
+        for agentUT in test_agents:
+            print("")
+            print("*************************")
+            print("{:^25}".format("Evaluating: " + agentUT.name))
+            print("*************************")
 
-        print("\n\nResults:")
-        print("----------")
-        print("{!s:<15}{:>10.2f}%".format(agentUT.name, win_ratio))
+            agents = random_agents + mm_agents + ab_agents + [agentUT]
+            win_ratio = play_round(agents, NUM_MATCHES)
+
+            print("\n\nResults:")
+            print("----------")
+            print("{!s:<15}{:>10.2f}%".format(agentUT.name, win_ratio))
 
 
 if __name__ == "__main__":

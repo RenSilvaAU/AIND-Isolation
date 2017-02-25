@@ -13,6 +13,86 @@ class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
 
+def custom_score_my_moves(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    # OPTION 1:  Number of My Moves
+
+    """
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # Number of My Moves - Number of Opponent's Moves
+    return float(len(game.get_legal_moves(player)))
+
+def custom_score_moves_minus_opponents(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    # OPTION 2:  Number of My Moves - Number of Opponents Moves
+    #            (This was my final choice)
+    #            This is the same as the "Improved Score" used by the players my agent plays against
+ 
+    """
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # Number of My Moves - Number of Opponent's Moves
+    return float( len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
+
+
+def custom_score_moves_minus_2_opponents(game, player):
+
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+
+    # OPTION 3:  Number of My Moves - 2 x Number of Opponent's Moves
+
+    """
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # Number of My Moves - Number of Opponent's Moves
+    return float( len(game.get_legal_moves(player)) - 2 * len(game.get_legal_moves(game.get_opponent(player))))
+
+def custom_score_2_moves_minus_opponents(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+
+    # OPTION 4:  2 x Number of My Moves - Number of Opponent's Moves
+
+    """
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    return float(2 * len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
+
+
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -41,27 +121,30 @@ def custom_score(game, player):
     #raise NotImplementedError
 
     """
-    I tried three possibilities:
+    I tried four possibilities:
 
      - Number of My moves
      - Number of My moves Minus Number of Opponent's moves
-     - Number of My moves Minus 2 x Number of Opponnents moves
+     - Number of My moves Minus 2 x Number of Opponnent's moves
+     - 2 x Number of My Moves Minus Opponent's moves
 
     # OPTION 1:  Number of My Moves
-    # return float(len(game.get_legal_moves(player)))
+    #  method:   custom_score_my_moves
 
     # OPTION 2:  Number of My Moves - Number of Opponents Moves
     #            (This was my final choice)
     #            This is the same as the "Improved Score" used by the players my agent plays against
-    # return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
+    #  method:   custom_score_moves_minus_opponents
 
     # OPTION 3:  Number of My Moves - 2 x Number of Opponent's Moves
-    # return float(len(game.get_legal_moves(player)) - 2 * len(game.get_legal_moves(game.get_opponent(player))))
+    #  method:   custom_score_moves_minus_2_opponents
 
     # OPTION 4:  2 x Number of My Moves - Number of Opponent's Moves
-    # return float(2 * len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player))))
-
+    #  method:   custom_score_2_moves_minus_opponents
+    
     """
+
+    #  this method is identical to ** custom_score_moves_minus_opponents ***
 
     if game.is_loser(player):
         return float("-inf")
